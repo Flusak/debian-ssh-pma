@@ -40,6 +40,6 @@ set /P user="User: "
 set /P host="Host: "
 type %usekey% | ssh %user%@%host% "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 0700 ~/.ssh && chmod 0644 ~/.ssh/authorized_keys"
 
-scp -i %usekey:.pub=% ./sshdebian.sh %user%@%host%:.
+scp -i %usekey:.pub=% ./ssh-debian.sh %user%@%host%:.
 
-ssh -t %user%@%host% "sudo bash sshdebian.sh"
+ssh -t %user%@%host% "sudo bash ssh-debian.sh"
