@@ -43,3 +43,5 @@ type %usekey% | ssh %user%@%host% "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_k
 scp -i %usekey:.pub=% ./ssh-debian.sh %user%@%host%:.
 
 ssh -t %user%@%host% "sudo bash ssh-debian.sh"
+
+pause
