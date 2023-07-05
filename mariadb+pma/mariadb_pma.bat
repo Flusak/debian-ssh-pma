@@ -33,8 +33,9 @@ if "%1"=="-i" (
     ) else set usekey=-i %keydef%
 )
 
-
-scp %usekey% -P %port% ./vol/pgadmin_nginx.sh ./vol/pgadmin_start.sh ./vol/pga.conf %user%@%host%:.
-ssh %usekey% -p %port% -t %user%@%host% "sudo bash pgadmin_nginx.sh && rm -r ./pga.conf ./pgadmin_nginx.sh"
+curl -Lo php.tar.gz --ssl-no-revoke https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.tar.gz
+scp %usekey% -P %port% ./php.tar.gz %cd%/vol/apache.txt %cd%/vol/mariadb.sh %user%@%host%:.
+del %cd%\php.tar.gz
+ssh %usekey% -p %port% -t %user%@%host% "sudo bash mariadb.sh; rm -r ./apache.txt ./mariadb.sh ./php.tar.gz"
 
 pause
