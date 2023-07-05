@@ -7,8 +7,15 @@ fi
 
 sed -i '/^deb cdrom/s/^deb/#deb/g' /etc/apt/sources.list
 
-apt-get update &&
-apt-get upgrade &&
+read -p "Input proxy (if not Enter): " useproxy
+if ! [ -z "$useproxy" ]
+then
+  if ! cat /etc/apt/apt.conf | grep "Acquire::http::Proxy \"$useproxy\";" >> /dev/null
+  then 
+  echo "Acquire::http::Proxy \"$useproxy\";" >> /etc/apt/apt.conf
+  fi
+fi
+
 apt-get -y install apache2 php mariadb-server &&
 
 mysql_secure_installation &&
@@ -16,6 +23,9 @@ read -sp "New password for admin in mariadb: " pass_bd &&
 echo $'\n' &&
 mysql --execute="GRANT ALL ON *.* TO 'admin'@'localhost' IDENTIFIED BY '$pass_bd' WITH GRANT OPTION;" &&
 mysql --execute="ALTER USER 'admin'@'localhost' IDENTIFIED BY '$pass_bd';" &&
+read -sp "Control password for pma: " control_pass &&
+echo $'\n'
+read -sp "Password for blowfish_secret: " blow_sec &&
 
 mkdir -p /var/lib/phpmyadmin/tmp &&
 mkdir -p /usr/share/phpmyadmin &&
@@ -27,19 +37,14 @@ cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.
 #Раскоментить все у storage database and tables
 #Удаление // по шаблону если есть Servers в строке
 sed -i '/\$cfg\s*\[.Servers.\]/s/^\/\/\s//g' /usr/share/phpmyadmin/config.inc.php &&
-read -sp "Password for blowfish_secret: " blow_sec &&
-echo $'\n' &&
 sed -i "/\$cfg\[.blowfish_secret.]\s=\s..;/s/''/'$blow_sec'/" /usr/share/phpmyadmin/config.inc.php &&
-echo $'\n' &&
-read -sp "Control password for pma: " control_pass &&
-echo $'\n' &&
 sed -i "/\$cfg\[.Servers.\]\[\$i\]\[.controlpass.\]/s/pmapass/$control_pass/g" /usr/share/phpmyadmin/config.inc.php &&
 echo "\$cfg['TempDir'] = '/var/lib/phpmyadmin/tmp';" >> /usr/share/phpmyadmin/config.inc.php &&
 mysql --execute="GRANT SELECT, INSERT, UPDATE, DELETE ON phpmyadmin.* TO 'pma'@'localhost' IDENTIFIED BY '$control_pass'; FLUSH PRIVILEGES;" &&
 mysql < /usr/share/phpmyadmin/sql/create_tables.sql &&
 
 rm -rf /usr/share/phpmyadmin/setup &&
-apt-get install php-mysql &&
+apt-get install -y php-mysql &&
 cat apache.txt > /etc/apache2/conf-available/pma.conf &&
 
 apt-get -y install php-mysql &&
